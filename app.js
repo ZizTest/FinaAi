@@ -1,8 +1,11 @@
 import fs from 'fs';
+import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const dbPath = './database.json';
-const brainPath = './brain.json';
+// --- BACA DARI VOLUME KALAU ADA ---
+const dataDir = fs.existsSync('/app/data') ? '/app/data' : '.';
+const dbPath = path.join(dataDir, 'database.json');
+const brainPath = path.join(dataDir, 'brain.json');
 
 if (!fs.existsSync(dbPath)) {
     fs.writeFileSync(dbPath, JSON.stringify({ users: {}, pendingUsers: {} }, null, 2));
@@ -93,7 +96,6 @@ export async function handleMessage(sock, sender, pushName, messageContent) {
 
         const history = userData.transactions;
         
-        // MENGHITUNG SALDO SAAT INI SEBELUM DIKASIH KE AI
         let currentBalance = 0;
         history.forEach(trx => {
             if (trx.type === 'expense') currentBalance -= trx.amount;
@@ -140,7 +142,6 @@ Pesan user: "${text}"`;
                 type: aiData.type,
                 item: aiData.item,
                 amount: aiData.amount,
-                // Nyimpen kategori & emoji hasil pikiran AI
                 category: aiData.category || "Lainnya",
                 emoji: aiData.emoji || "📝"
             });
