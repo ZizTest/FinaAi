@@ -10,14 +10,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ==========================================
-const NOMOR_BOT = "628123456789"; // Ganti dengan nomor bot lu
+const NOMOR_BOT = "6285714494070"; // Ganti dengan nomor bot lu
 // ==========================================
 
 // --- FITUR VOLUME SMART SYNC ---
 // Cek apakah server punya Volume di '/app/data' (Railway), kalau nggak, pakai folder saat ini (Termux/PC)
 const dataDir = fs.existsSync('/app/data') ? '/app/data' : '.';
 const settingsPath = path.join(dataDir, 'settings.json');
-const authPath = path.join(dataDir, 'auth_info_baileys');
+const authPath = path.join(dataDir, 'auth_fina_permanen');
 const dbPath = path.join(dataDir, 'database.json');
 
 // Otomatis pindahin file konfigurasi awal ke dalam Volume biar gak hilang
