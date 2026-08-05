@@ -1,0 +1,23 @@
+{
+  "users": {
+    "43903457702060@lid": {
+      "id": "43903457702060",
+      "name": "zizz",
+      "registeredAt": "2026-08-04T22:40:51.278Z",
+      "transactions": [
+        {
+          "id": "1785907330192",
+          "date": "2026-08-05",
+          "type": "expense",
+          "item": "Pulsa",
+          "amount": 100000,
+          "category": "Komunikasi",
+          "emoji": "📱"
+        }
+      ]
+    }
+  },
+  "pendingUsers": {
+    "65627838504980@lid": true
+  }
+}

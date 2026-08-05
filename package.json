@@ -1,0 +1,21 @@
+{
+  "name": "wa-bot",
+  "version": "1.0.0",
+  "description": "Bot WA Pencatat Keuangan dengan AI",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.14.0",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "express": "^5.2.1",
+    "pino": "^10.3.1"
+  },
+  "allowScripts": {
+    "protobufjs@7.6.5": true,
+    "@whiskeysockets/baileys@7.0.0-rc14": true
+  }
+}
