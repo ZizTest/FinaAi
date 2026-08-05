@@ -10,11 +10,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ==========================================
-// TULIS NOMOR BOT LU DI SINI (Pakai awalan 62)
-const NOMOR_BOT = "6285714494070"; 
+const NOMOR_BOT = "628123456789"; // Ganti dengan nomor bot lu
 // ==========================================
 
-const settingsPath = './settings.json';
+// --- FITUR VOLUME SMART SYNC ---
+// Cek apakah server punya Volume di '/app/data' (Railway), kalau nggak, pakai folder saat ini (Termux/PC)
+const dataDir = fs.existsSync('/app/data') ? '/app/data' : '.';
+const settingsPath = path.join(dataDir, 'settings.json');
+const authPath = path.join(dataDir, 'auth_info_baileys');
+const dbPath = path.join(dataDir, 'database.json');
+
+// Otomatis pindahin file konfigurasi awal ke dalam Volume biar gak hilang
+if (dataDir === '/app/data') {
+    ['brain.json', 'settings.json', 'database.json'].forEach(file => {
+        const sourcePath = path.join('.', file);
+        const targetPath = path.join(dataDir, file);
+        if (fs.existsSync(sourcePath) && !fs.existsSync(targetPath)) {
+            fs.copyFileSync(sourcePath, targetPath);
+            console.log(`[SYSTEM] Berhasil memindahkan ${file} ke penyimpanan permanen (Volume).`);
+        }
+    });
+}
+
 if (!fs.existsSync(settingsPath)) {
     fs.writeFileSync(settingsPath, JSON.stringify({ allowedNumbers: ["6285714494070"], privateMode: true }, null, 2));
 }
@@ -22,7 +39,8 @@ if (!fs.existsSync(settingsPath)) {
 const otpStore = {};
 
 async function startSystem() {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    // Sesi login WA sekarang disimpen di Volume biar gak perlu pairing terus
+    const { state, saveCreds } = await useMultiFileAuthState(authPath);
 
     const sock = makeWASocket({
         auth: state,
@@ -30,7 +48,6 @@ async function startSystem() {
         browser: ['Mac OS', 'Chrome', '121.0.0.0']
     });
 
-    // Otomatis minta kode pairing tanpa nunggu input keyboard
     if (!state.creds.registered) {
         setTimeout(async () => {
             try {
@@ -67,7 +84,7 @@ async function startSystem() {
         const messageContent = msg.message.conversation || msg.message.extendedTextMessage?.text;
 
         if (messageContent) {
-            const settings = JSON.parse(fs.readFileSync('./settings.json', 'utf-8'));
+            const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
             if (settings.privateMode) {
                 const isAllowed = settings.allowedNumbers.some(num => sender.includes(num));
                 if (!isAllowed) return; 
@@ -76,7 +93,7 @@ async function startSystem() {
         }
     });
 
-    // SISTEM WEB & API (TETAP SAMA SEPERTI SEBELUMNYA)
+    // SISTEM WEB & API
     const app = express();
     app.use(express.json());
     app.use(express.static(path.join(__dirname, 'public')));
@@ -87,8 +104,8 @@ async function startSystem() {
         if (phone.startsWith('0')) phone = '62' + phone.substring(1);
 
         const targetJid = phone + '@s.whatsapp.net';
-        const db = JSON.parse(fs.readFileSync('./database.json', 'utf-8'));
-        const settings = JSON.parse(fs.readFileSync('./settings.json', 'utf-8'));
+        const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
 
         let userKey = Object.keys(db.users).find(k => k.includes(phone));
         if (!userKey) {
@@ -124,8 +141,8 @@ async function startSystem() {
         let phone = req.query.phone;
         if (!phone) return res.status(401).json({ error: "Akses ditolak." });
 
-        const db = JSON.parse(fs.readFileSync('./database.json', 'utf-8'));
-        const settings = JSON.parse(fs.readFileSync('./settings.json', 'utf-8'));
+        const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
 
         let userKey = Object.keys(db.users).find(k => k.includes(phone));
         if (!userKey) {
@@ -137,7 +154,6 @@ async function startSystem() {
         else res.status(404).json({ error: "Data tidak ditemukan." });
     });
 
-    // Railway otomatis ngasih environment variable PORT
     const port = process.env.PORT || 3000;
     app.listen(port, '0.0.0.0', () => {
         console.log(`✅ Web Dashboard aktif di port ${port}`);
